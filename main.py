@@ -1,13 +1,11 @@
 import streamlit as st
-from Crypto.Cipher import AES, DES
+from Crypto.Cipher import AES, DES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from Crypto.Random import get_random_bytes
-from Crypto.Cipher import PKCS1_OAEP
 
+DEFAULT_AES_KEY = "00112233445566778899aabbccddeeff"
+DEFAULT_DES_KEY = "0123456789abcdef"
 
-DEFAULT_AES_KEY = "00112233445566778899aabbccddeeff" 
-DEFAULT_DES_KEY = "0123456789abcdef" 
-
+# AES functions
 def aes_encrypt(message, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
@@ -19,6 +17,7 @@ def aes_decrypt(ciphertext, key, nonce):
     plaintext = cipher.decrypt(ciphertext).decode()
     return plaintext
 
+# DES functions
 def des_encrypt(message, key):
     cipher = DES.new(key, DES.MODE_ECB)
     padded_message = message + " " * (8 - len(message) % 8)
@@ -30,6 +29,7 @@ def des_decrypt(ciphertext, key):
     padded_message = cipher.decrypt(ciphertext).decode()
     return padded_message.strip()
 
+# RSA functions
 def rsa_encrypt(message, public_key):
     cipher = PKCS1_OAEP.new(public_key)
     ciphertext = cipher.encrypt(message.encode())
@@ -41,84 +41,75 @@ def rsa_decrypt(ciphertext, private_key):
     return plaintext
 
 def generate_rsa_keys():
-    public_key, private_key = RSA.newkeys(2048) 
+    key = RSA.generate(2048)
+    private_key = key.export_key()
+    public_key = key.publickey().export_key()
     return public_key, private_key
 
+# Streamlit app
 st.title("Multiple Encryption")
-st.write("Hi, Sir Corton ")
+st.write("Hi, Sir Corton")
 
-col1, col2 = st.columns(2)
-
-with col1:
-    method = st.selectbox(
-        "Method",
-        ("Encrypt", "Decrypt"),
-    )
-
-with col2:
-    encryption_type = st.selectbox(
-        "Type",
-        ("AES", "DES", "RSA"),
-    )
+method = st.selectbox("Method", ("Encrypt", "Decrypt"))
+encryption_type = st.selectbox("Type", ("AES", "DES", "RSA"))
 
 if encryption_type == "AES":
     st.subheader(f"AES {method}")
-    message = st.text_input("Enter the message:") if method == "Encrypt" else None
     key = st.text_input("Enter the 16-byte key (in hex):", value=DEFAULT_AES_KEY)
-    nonce = st.text_input("Enter the nonce (in hex):", value="") if method == "Decrypt" else None
-    ciphertext = st.text_input("Enter the ciphertext (in hex):", value="") if method == "Decrypt" else None
+    key_bytes = bytes.fromhex(key)
+
+    if method == "Encrypt":
+        message = st.text_input("Enter the message:")
+    else:
+        nonce = st.text_input("Enter the nonce (in hex):")
+        ciphertext = st.text_input("Enter the ciphertext (in hex):")
 
 elif encryption_type == "DES":
     st.subheader(f"DES {method}")
-    message = st.text_input("Enter the message:") if method == "Encrypt" else None
     key = st.text_input("Enter the 8-byte key (in hex):", value=DEFAULT_DES_KEY)
-    ciphertext = st.text_input("Enter the ciphertext (in hex):", value="") if method == "Decrypt" else None
+    key_bytes = bytes.fromhex(key)
+
+    if method == "Encrypt":
+        message = st.text_input("Enter the message:")
+    else:
+        ciphertext = st.text_input("Enter the ciphertext (in hex):")
 
 elif encryption_type == "RSA":
     st.subheader(f"RSA {method}")
-    public_key, private_key = generate_rsa_keys()
     if method == "Encrypt":
         message = st.text_input("Enter the message:")
         public_key, private_key = generate_rsa_keys()
-        public_key_input = st.text_area("Enter the public key:", value=public_key)
-    elif method == "Decrypt":
-        ciphertext = st.text_area("Enter the ciphertext (in hex):")
-        public_key, private_key = generate_rsa_keys()
-        private_key_input = st.text_area("Enter the private key:", value=private_key)
+        st.text_area("Generated Public Key:", value=public_key.decode())
+        st.text_area("Generated Private Key:", value=private_key.decode())
+    else:
+        ciphertext = st.text_input("Enter the ciphertext (in hex):")
+        private_key_input = st.text_area("Enter the private key:")
 
 if st.button("Submit"):
     try:
         if method == "Encrypt":
             if encryption_type == "AES":
-                key_bytes = bytes.fromhex(key)
                 ciphertext, nonce = aes_encrypt(message, key_bytes)
                 st.write(f"Ciphertext: {ciphertext.hex()}")
                 st.write(f"Nonce: {nonce.hex()}")
-
             elif encryption_type == "DES":
-                key_bytes = bytes.fromhex(key)
                 ciphertext = des_encrypt(message, key_bytes)
                 st.write(f"Ciphertext: {ciphertext.hex()}")
-
             elif encryption_type == "RSA":
-                public_key = RSA.import_key(public_key_input)
+                public_key = RSA.import_key(public_key)
                 ciphertext = rsa_encrypt(message, public_key)
                 st.write(f"Ciphertext: {ciphertext.hex()}")
 
         elif method == "Decrypt":
             if encryption_type == "AES":
-                key_bytes = bytes.fromhex(key)
                 nonce_bytes = bytes.fromhex(nonce)
                 ciphertext_bytes = bytes.fromhex(ciphertext)
                 plaintext = aes_decrypt(ciphertext_bytes, key_bytes, nonce_bytes)
                 st.write(f"Plaintext: {plaintext}")
-
             elif encryption_type == "DES":
-                key_bytes = bytes.fromhex(key)
                 ciphertext_bytes = bytes.fromhex(ciphertext)
                 plaintext = des_decrypt(ciphertext_bytes, key_bytes)
                 st.write(f"Plaintext: {plaintext}")
-
             elif encryption_type == "RSA":
                 private_key = RSA.import_key(private_key_input)
                 ciphertext_bytes = bytes.fromhex(ciphertext)
