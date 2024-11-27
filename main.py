@@ -74,7 +74,8 @@ def rsa_encrypt(message, public_key):
     ciphertext = cipher.encrypt(message.encode())
     return ciphertext
 
-def rsa_decrypt(ciphertext, private_key):
+def rsa_decrypt(ciphertext, private_key_pem):
+    private_key = RSA.import_key(private_key_pem)
     cipher = PKCS1_OAEP.new(private_key)
     plaintext = cipher.decrypt(ciphertext).decode()
     return plaintext
