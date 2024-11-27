@@ -69,14 +69,19 @@ def des_decrypt(ciphertext, key):
     padded_message = cipher.decrypt(ciphertext).decode()
     return padded_message.strip()
 
-def rsa_encrypt(message, public_key):
+# Encrypt using RSA
+def rsa_encrypt(plaintext, public_key_pem):
+    public_key = RSA.import_key(public_key_pem)
     cipher = PKCS1_OAEP.new(public_key)
-    ciphertext = cipher.encrypt(message.encode())
-    return ciphertext
+    ciphertext = cipher.encrypt(plaintext.encode())
+    return base64.b64encode(ciphertext).decode()
 
-def rsa_decrypt(ciphertext, private_key):
+# Decrypt using RSA
+def rsa_decrypt(ciphertext, private_key_pem):
+    private_key = RSA.import_key(private_key_pem)
     cipher = PKCS1_OAEP.new(private_key)
-    plaintext = cipher.decrypt(ciphertext).decode()
+    ciphertext_bytes = base64.b64decode(ciphertext.encode())
+    plaintext = cipher.decrypt(ciphertext_bytes).decode()
     return plaintext
 
 
