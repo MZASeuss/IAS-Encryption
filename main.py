@@ -40,12 +40,6 @@ def rsa_decrypt(ciphertext, private_key):
     plaintext = cipher.decrypt(ciphertext).decode()
     return plaintext
 
-def generate_rsa_keys():
-    key = RSA.generate(2048)
-    private_key = key.export_key()
-    public_key = key.publickey().export_key()
-    return public_key, private_key
-
 # Streamlit app
 st.title("Multiple Encryption")
 st.write("Hi, Sir Corton")
@@ -78,9 +72,8 @@ elif encryption_type == "RSA":
     st.subheader(f"RSA {method}")
     if method == "Encrypt":
         message = st.text_input("Enter the message:")
-        public_key, private_key = generate_rsa_keys()
-        st.text_area("Generated Public Key:", value=public_key.decode())
-        st.text_area("Generated Private Key:", value=private_key.decode())
+        st.text_area("Generated Public Key:")
+        st.text_area("Generated Private Key:")
     else:
         ciphertext = st.text_input("Enter the ciphertext (in hex):")
         private_key_input = st.text_area("Enter the private key:")
