@@ -76,6 +76,7 @@ elif encryption_type == "DES":
 
 elif encryption_type == "RSA":
     st.subheader(f"RSA {method}")
+    public_key, private_key = generate_rsa_keys()
     if method == "Encrypt":
         message = st.text_input("Enter the message:")
         public_key, private_key = generate_rsa_keys()
