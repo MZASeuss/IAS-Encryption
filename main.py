@@ -72,11 +72,10 @@ elif encryption_type == "RSA":
     st.subheader(f"RSA {method}")
     if method == "Encrypt":
         message = st.text_input("Enter the message:")
-        st.text_area("Generated Public Key:")
-        st.text_area("Generated Private Key:")
+        public_key = st.text_area("Enter the public key:")
     else:
         ciphertext = st.text_input("Enter the ciphertext (in hex):")
-        private_key_input = st.text_area("Enter the private key:")
+        private_key = st.text_area("Enter the private key:")
 
 if st.button("Submit"):
     try:
@@ -89,7 +88,6 @@ if st.button("Submit"):
                 ciphertext = des_encrypt(message, key_bytes)
                 st.write(f"Ciphertext: {ciphertext.hex()}")
             elif encryption_type == "RSA":
-                public_key = RSA.import_key(public_key)
                 ciphertext = rsa_encrypt(message, public_key)
                 st.write(f"Ciphertext: {ciphertext.hex()}")
 
@@ -104,7 +102,6 @@ if st.button("Submit"):
                 plaintext = des_decrypt(ciphertext_bytes, key_bytes)
                 st.write(f"Plaintext: {plaintext}")
             elif encryption_type == "RSA":
-                private_key = RSA.import_key(private_key_input)
                 ciphertext_bytes = bytes.fromhex(ciphertext)
                 plaintext = rsa_decrypt(ciphertext_bytes, private_key)
                 st.write(f"Plaintext: {plaintext}")
