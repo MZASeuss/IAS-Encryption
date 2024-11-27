@@ -4,6 +4,33 @@ from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from Crypto.Cipher import PKCS1_OAEP
 
+
+DEFAULT_AES_KEY = "00112233445566778899aabbccddeeff" 
+DEFAULT_DES_KEY = "0123456789abcdef" 
+
+DEFAULT_RSA_PUBLIC_KEY = """
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7vLVGzhmLSc7fMWhcJ7m
+7iKD2FuHP/mkEktQpDyYO5YY3nH8lvTAsR8Yf0U41VZpN5O8Nk3Lw8WbOT9QuAHD
+Pnp0ZbIMrvh6G/WmUMqTka/ekVWmFWJoM8P7dK8eP39FRzBN3RZzS+bwgjpJdS1g
+lQQ6Vfp60/uUMKQm29KsZ9sQIgYJOrVtYuzG+lITM0afRn+7K6gpXBC1nRruXXwB
+PxS6VJeU8XBXqfOtqTgflR6xwW3E2Rz+DY04LkCeSzCsbz3hh1zLg6BRQaewlvLZ
+G8nsObubpKtAxZPPyF5kHiTIGjoxHd6k+G46ZubOylHcKnmWMWbF2t4J5ykROkxk
+PwIDAQAB
+-----END PUBLIC KEY-----
+"""
+
+DEFAULT_RSA_PRIVATE_KEY = """
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEA7vLVGzhmLSc7fMWhcJ7m7iKD2FuHP/mkEktQpDyYO5YY3nH8
+lvTAsR8Yf0U41VZpN5O8Nk3Lw8WbOT9QuAHDPnp0ZbIMrvh6G/WmUMqTka/ekVWm
+FWJoM8P7dK8eP39FRzBN3RZzS+bwgjpJdS1glQQ6Vfp60/uUMKQm29KsZ9sQIgYJ
+OrVtYuzG+lITM0afRn+7K6gpXBC1nRruXXwBPxS6VJeU8XBXqTgflR6xwW3E2Rz+
+...
+-----END RSA PRIVATE KEY-----
+"""
+
+
 def aes_encrypt(message, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
@@ -17,7 +44,7 @@ def aes_decrypt(ciphertext, key, nonce):
 
 def des_encrypt(message, key):
     cipher = DES.new(key, DES.MODE_ECB)
-    padded_message = message + " " * (8 - len(message) % 8) 
+    padded_message = message + " " * (8 - len(message) % 8)
     ciphertext = cipher.encrypt(padded_message.encode())
     return ciphertext
 
@@ -35,6 +62,7 @@ def rsa_decrypt(ciphertext, private_key):
     cipher = PKCS1_OAEP.new(private_key)
     plaintext = cipher.decrypt(ciphertext).decode()
     return plaintext
+
 
 st.title("Multiple Encryption")
 st.write("Hi, Sir Corton ")
@@ -55,25 +83,25 @@ with col2:
 
 if encryption_type == "AES":
     st.subheader(f"AES {method}")
-    message = st.text_input("Enter the message:")
-    key = st.text_input("Enter the 16-byte key (in hex):", value="") if method == "Encrypt" else None
+    message = st.text_input("Enter the message:") if method == "Encrypt" else None
+    key = st.text_input("Enter the 16-byte key (in hex):", value=DEFAULT_AES_KEY)
     nonce = st.text_input("Enter the nonce (in hex):", value="") if method == "Decrypt" else None
     ciphertext = st.text_input("Enter the ciphertext (in hex):", value="") if method == "Decrypt" else None
 
 elif encryption_type == "DES":
     st.subheader(f"DES {method}")
     message = st.text_input("Enter the message:") if method == "Encrypt" else None
-    key = st.text_input("Enter the 8-byte key (in hex):")
+    key = st.text_input("Enter the 8-byte key (in hex):", value=DEFAULT_DES_KEY)
     ciphertext = st.text_input("Enter the ciphertext (in hex):", value="") if method == "Decrypt" else None
 
 elif encryption_type == "RSA":
     st.subheader(f"RSA {method}")
     if method == "Encrypt":
         message = st.text_input("Enter the message:")
-        public_key_input = st.text_area("Enter the public key:")
+        public_key_input = st.text_area("Enter the public key:", value=DEFAULT_RSA_PUBLIC_KEY)
     elif method == "Decrypt":
         ciphertext = st.text_area("Enter the ciphertext (in hex):")
-        private_key_input = st.text_area("Enter the private key:")
+        private_key_input = st.text_area("Enter the private key:", value=DEFAULT_RSA_PRIVATE_KEY)
 
 if st.button("Submit"):
     try:
